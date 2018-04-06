@@ -1,0 +1,7 @@
+pelican
+cssutils
+beautifulsoup4
+ghp-import
+Pillow
+markdown
+pysvg
