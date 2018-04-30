@@ -12,8 +12,8 @@ email when you had to resize them one by one so that they fit the 5MB
 limit?
 
 Do you remember this migration from S3 to OpenStack where you had to
-download each file in a bucket, extract some metatadata and put them
-in a database before uploading it back to the new bucket?
+download each file from a bucket, extract some metatadata and store them
+in a database before uploading the file back to the new bucket?
 
 In my case I had to download videos from our NAS and encrypt them for
 |HLS| in three sizes with a M3U8 file for each resolution/bitrate
@@ -31,8 +31,8 @@ Asyncio to the rescue
 AsyncIO is a Python3 feature that allow to develop a Python program
 around the IO loop design pattern.
 
-At first inderstanding this IO loop design pattern is not easy mainly
-because usually computer don't work like that.
+At first understanding the IO loop design pattern is not such an easy
+task, mainly because usually computer don't work like that.
 
 CPU bound programs
 ------------------
@@ -42,7 +42,7 @@ calculate things and store the result in memory.
 
 When they are busy they heat and the CPU is at 100%.
 
-We call the kind of programs that feed the CPU, CPU bound programs.
+We call CPU bound programs, the kind of programs that feed the CPU.
 
 We can make such a program faster to run either by adding CPUs or by
 using faster CPUs.
@@ -58,16 +58,16 @@ don't have enough data to give to your program to feed your CPU at
 If you watch videos in streaming, you will often have to wait for the
 video to download, this is because the video bitrate is larger than
 your network capacity. Your connection doesn't allow you to download
-the video faster than the player consume the data.
+the video faster than the player consumes the data.
 
-We call the kind of programs that are limited by the network bandwith,
-IO bound programs.
+We call IO bound programs, the kind of programs that are limited by
+the network bandwith.
 
 But it is also true when accessing a slow device, for instance Hard
-Drive Disks are quite slow that's why we say that the computer lags as
-soon as the memory is full and programs starts to use the HDD to store
-their parameters and results because they are waiting too much on
-reading and writting to the HDD.
+Drive Disks are quite slow. We say that the computer lags as soon as
+the memory is full and programs starts to use the HDD to store their
+parameters and results because they are waiting too much on reading
+and writting to the HDD.
 
 As soon as the data, your feed your program with, flows slower than
 the calculation, you have an IO bound software.
@@ -86,7 +86,7 @@ completed it will resume the calculation of the function with its
 result.
 
 Let say you play with your dog, you will throw a stick. If your dog
-wants to play it will go fetch the stick and come back to you.
+wants to play, it will go fetch the stick and come back to you (sometimes).
 
 .. image:: {filename}/images/fetching-stick.jpg
     :alt: Dog fetching a stick
@@ -133,7 +133,7 @@ A consumer / producer model with AsyncIO
 
 The idea is to have two coroutines:
 
-- one that will feed a Queue
+- one that will publish to a Queue
 - one that will consume the Queue
 
 As soon as both are done, the program ends.
@@ -376,7 +376,7 @@ Producer : Downloading the URLs
 -------------------------------
 
 We take our list of URLs and for each of them we download the URL and
-send the ID to the encoding queue once downloaded.
+once downloaded we feed the ID to the encoding queue.
 
 .. code-block:: python
 
