@@ -4,7 +4,7 @@ How to take advantage of AsyncIO to solve an IO Bound / CPU Bound problem?
 :lang: en
 :date: 2018-05-01
 :url: an-asyncio-io-bound-producer-playing-with-a-cpu-bound-consumer
-:summary: Learn more about the asyncio producer/consumer and Queue model.
+:summary: Learn more about the asyncio producer, consumer, and queue model.
 :slug: asyncio-io-bound-producer-and-cpu-bound-consumer
 
 Do you remember this SD-Card of pictures that you wanted to send by
