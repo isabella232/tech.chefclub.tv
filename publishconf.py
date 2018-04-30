@@ -14,3 +14,4 @@ CATEGORY_FEED_ATOM = 'feeds/%s.atom.xml'
 TAG_FEED_ATOM = "feeds/%s.atom.xml"
 
 DELETE_OUTPUT_DIRECTORY = True
+DISQUS_SITENAME = "tech-chefclub-tv"
