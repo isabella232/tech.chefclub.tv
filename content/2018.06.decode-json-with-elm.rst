@@ -1,0 +1,559 @@
+How to decode complex JSON with Elm?
+####################################
+
+:lang: en
+:date: 2018-06-04
+:url: how-to-decode-complex-json-with-elm
+:summary: Using Elm is great but sometimes you need to decode some JSON and it might get tricky. This article tries to showcase some example to ease the process.
+:slug: how-to-decode-complex-json-with-elm
+
+A year ago, I did a presentation at `DjangoCong Toulon 2017 <https://rencontres.django-fr.org/2017/programme.html#natim>`_ about that same subject.
+
+I used my presentation a lot during the last couple of months and
+found out even trickier JSON parsing examples.
+
+Let's talk about JSON decoding with Elm again.
+
+
+Why do I need to Decode JSON?
+=============================
+
+If you picked Elm at this point it is probably because you love its
+compiler and workflow. Those give you confidence that your application
+is working as expected.
+
+The price of gaining this confidence when decoding JSON is stiff. You
+will need to tell Elm how it should turn the JSON string into an Elm
+record so that it can play nicely with it later, as it would with
+other Elm type aliases.
+
+
+The simple decoding
+===================
+
+The ``Json.Decode`` library exposes all the primitives you need for
+you to decode JSON types: Boolean, Integer, String, List, Array,
+Tuple, Dict, Float, null
+
+I personaly like the `JSON.Decode.Pipeline library <http://package.elm-lang.org/packages/NoRedInk/elm-decode-pipeline/3.0.0>`_
+which makes it even easier to build object decoders with optional, hardcoded, or
+required values.
+
+Playing around with JSON
+========================
+
+I wrote a simple playground in Elm that you can use to play with decoders:
+
+.. code-block:: elm
+
+    module Main exposing (main)
+
+    import Html as H exposing (Html)
+    import Html.Attributes as HA
+    import Html.Events as HE
+    import Json.Decode as JD exposing (Decoder)
+    import Json.Decode.Pipeline exposing (decode, optional, required)
+
+
+    main : Program Never Model Msg
+    main =
+        H.program
+            { init = init
+            , update = update
+            , view = view
+            , subscriptions = always Sub.none
+            }
+
+
+    type alias Model =
+        { content : String
+        , decode : Bool
+        , record : Maybe Record
+        }
+
+
+    type Msg
+        = Enter String
+        | Submit
+
+
+    init : ( Model, Cmd Msg )
+    init =
+        { content = "{\"uid\": \"abcd-efgh\"}", decode = False, record = Nothing } ! []
+
+
+    update msg model =
+        case msg of
+            Enter content ->
+                { model | content = content, record = Nothing } ! []
+    
+            Submit ->
+                let
+                    result =
+                        JD.decodeString customDecoder model.content
+                in
+                case result of
+                    Ok record ->
+                        { model | record = Just record } ! []
+    
+                    Err err ->
+                        let
+                            e =
+                                Debug.log "Something failed" err
+                        in
+                        { model | record = Nothing } ! []
+
+
+    type alias Record =
+        { uid : String }
+
+
+    customDecoder : JD.Decoder Record
+    customDecoder =
+        decode Record
+            |> required "uid" JD.string
+
+
+    view model =
+        H.div []
+            [ H.textarea
+                [ HE.onInput Enter
+                , HA.rows 15
+                , HA.cols 80
+                ]
+                [ H.text model.content ]
+            , H.button [ HE.onClick Submit ] [ H.text "Decode" ]
+            , case model.record of
+                Just record ->
+                    H.div [] [ H.text <| "Uid:" ++ record.uid ]
+    
+                Nothing ->
+                    H.span [] []
+            ]
+
+
+It displays a TextArea where you can input your JSON and uses the
+customDecoder to build an Elm Record from it.
+
+`Try <https://ellie-app.com/qrpgy7tFHMa1>`_ with :
+
+.. code-block:: json
+
+	{"uid": "Test"}
+
+
+Decoding an object
+==================
+
+Required string properties
+--------------------------
+
+The simplest JSON object to decode is one that contains a key and a value.
+
+Let start with a JSON object from which we want to read the uid.
+
+**JSON samples**
+
+.. code-block:: json
+
+    {"uid": "aeb2c06d-ce4f-4bc7-a601-3e7d9e159925"}
+
+	
+**Record and decoder**
+
+.. code-block:: elm
+
+    import Json.Decode as JD exposing (Decoder)
+    import Json.Decode.Pipeline exposing (decode, optional, required)
+
+    type alias Record =
+        { uid : String }
+
+
+    customDecoder : JD.Decoder Record
+    customDecoder =
+        decode Record
+            |> required "uid" JD.string
+
+
+What happens if you try with this JSON object:
+
+.. code-block:: json
+
+    {"uid": "aeb2c06d-ce4f-4bc7-a601-3e7d9e159925", "everything": "else will", "be": "ignored"}
+
+It is important to see that the decoder will only care about what you
+said you wanted to decode and ignores everything else.
+
+Try it here: https://ellie-app.com/qrpgy7tFHMa1
+
+
+Optional values
+---------------
+
+Let's add an optional value for the age.
+
+**JSON samples**
+
+.. code-block:: json
+
+    {"uid": "aeb2c06d-ce4f-4bc7-a601-3e7d9e159925", "age": 15}
+
+
+**Record and decoder**
+
+.. code-block:: elm
+
+    import Json.Decode as JD exposing (Decoder)
+    import Json.Decode.Pipeline exposing (decode, optional, required)
+
+    type alias Record =
+        { uid : String
+        , age : Maybe Int
+        }
+
+
+    customDecoder : JD.Decoder Record
+    customDecoder =
+        decode Record
+            |> required "uid" JD.string
+            |> optional "age" (JD.maybe JD.int) Nothing
+
+
+With optional we need to define the default value, and as you can see, if we want to
+use a Maybe, we need to use Json.Decode.maybe in front of the usual value JSON Decoder.
+
+Try it here: https://ellie-app.com/qrHJ5smRsna1
+
+
+Hardcoded values
+----------------
+
+You will see below that sometimes we want to add an hardcoded value.
+
+**JSON samples**
+
+.. code-block:: json
+
+    {"uid": "aeb2c06d-ce4f-4bc7-a601-3e7d9e159925", "age": 15}
+    {"uid": "aeb2c06d-ce4f-4bc7-a601-3e7d9e159925", "version": "ignored", "age": 5}
+
+
+**Record and decoder**
+
+.. code-block:: elm
+
+    import Json.Decode as JD exposing (Decoder)
+    import Json.Decode.Pipeline exposing (decode, optional, required)
+
+    type alias Record =
+        { uid : String
+        , age : Maybe Int
+        , version : Float
+        }
+
+
+    customDecoder : JD.Decoder Record
+    customDecoder =
+        decode Record
+            |> required "uid" JD.string
+            |> optional "age" (JD.maybe JD.int) Nothing
+            |> hardcoded 1.0
+
+In that case if the JSON record contains a value it will not use it.
+
+Note that the only link we see between a Elm Record and a JSON
+object is the decoder parameter order. In our case there are no links
+between the version field in the JSON object and the version property
+of our record.
+
+Try it here: https://ellie-app.com/qrMrY9B3FZa1
+
+
+Turn enum to types
+------------------
+
+At ChefClub we have three main verticals that are
+`ChefClub Original <https://www.facebook.com/ChefClub.tv/>`_,
+`ChefClub Cocktails <https://www.facebook.com/ChefClubcocktails>`_ and
+`ChefClub Light&Fun <https://www.facebook.com/chefclublightandfun/>`_.
+
+I gave you the link to the French ones, but feel free to search for
+the one in your favorite country.
+
+For some reason, we might want to use a type when we load the information.
+
+Here is how we can do it.
+
+**JSON samples**
+
+.. code-block:: json
+
+    {"uid": "aeb2c06d-ce4f-4bc7-a601-3e7d9e159925", "age": 15, "vertical": "original"}
+    {"uid": "aeb2c06d-ce4f-4bc7-a601-3e7d9e159925", "vertical": "boom", "age": 5}
+
+
+**Record and decoder**
+
+.. code-block:: elm
+
+    import Json.Decode as JD exposing (Decoder)
+    import Json.Decode.Pipeline exposing (decode, optional, required)
+
+    type Vertical = Original | Cocktails | LightAndFun | Unknown
+
+    type alias Record =
+        { uid : String
+        , age : Maybe Int
+        , version : Float
+        , vertical : Vertical
+        }
+
+
+    customDecoder : JD.Decoder Record
+    customDecoder =
+        decode Record
+            |> required "uid" JD.string
+            |> optional "age" (JD.maybe JD.int) Nothing
+            |> hardcoded 1.0
+            |> required "vertical" decodeVertical
+
+    decodeVertical : Decoder Vertical
+    decodeVertical =
+        JD.string
+            |> JD.map verticalFromString
+
+    verticalFromString : String -> Vertical
+    verticalFromString verticalString =
+        case verticalString of
+            "original" ->
+                Original
+            "cocktails" ->
+                Cocktails
+            "light-and-fun" ->
+                LightAndFun
+            _ ->
+                Unknown
+
+Try it here: https://ellie-app.com/qrXdYJMg6Xa1
+
+
+Turn unpredictable object keys into lists of records
+====================================================
+
+To be honest, this is the part that drove me into writing this
+article.
+
+Let start with a simple case:
+
+**JSON samples**
+
+.. code-block:: json
+
+    {"John": "Lennon", "Jacques": "Tati"}
+
+**Record and decoder**
+
+.. code-block:: elm
+
+    import Json.Decode as JD
+
+    type alias Record =
+        { people : List Person }
+
+
+    type alias Person =
+        { firstname : String
+        , lastname : String
+        }
+
+
+    customDecoder : JD.Decoder Record
+    customDecoder =
+        JD.keyValuePairs JD.string
+            |> JD.map buildPerson
+
+
+    buildPerson : List ( String, String ) -> Record
+    buildPerson people =
+        Record (List.map (\(firstname, lastname) -> Person firstname lastname) people)
+
+
+Try it here: https://ellie-app.com/qsqSwx8bHka1
+
+
+The same thing with a more difficult record
+===========================================
+
+Now it gets interesting, what if we have the following JSON to decode?
+
+**JSON samples**
+
+.. code-block:: json
+
+    {"Germany": {"motto": "Einigkeit und Recht und Freiheit", "currency": "EUR"},
+     "England": {"motto": "God Save the Queen", "currency": "GBP"},
+     "France": {"motto": "Liberté, Égalité, Fraternité", "currency": "EUR"}}
+
+**Record and decoder**
+
+.. code-block:: elm
+
+    import Json.Decode as JD
+    import Json.Decode.Pipeline exposing (decode, optional, required)
+
+    type alias Record =
+        { countries : List Country }
+
+
+    type alias Country =
+        { name: String
+        , motto : String
+        , currency : String
+        }
+
+
+    customDecoder : JD.Decoder Record
+    customDecoder =
+        JD.keyValuePairs decodeCountry
+            |> JD.map buildRecord
+
+
+    buildRecord : List ( String, Country ) -> Record
+    buildRecord countries =
+        Record (List.map (\(name, country) -> { country | name = name }) countries)
+
+    decodeCountry : JD.Decoder Country
+    decodeCountry =
+        decode Country
+            |> hardcoded ""
+            |> required "motto" JD.string
+            |> required "currency" JD.currency
+
+
+Try it here: https://ellie-app.com/qsQwRxLpZta1
+
+
+Nested unpredictible keys decoding
+==================================
+
+And what if the unpredictible keys are nested ?
+
+Let's take back our previous example with ChefClub verticals, we might
+want to grab some information for each pages in each countries.
+
+Most country have at least the Original page, but some don't have all
+the vertical or even have got specific verticals that don't exists in
+other countries.
+
+**JSON samples**
+
+.. code-block:: json
+
+    {"Germany": {"Original": {"id": 1234}, "Cocktails": {"id": 4567}},
+     "England": {"Original": {"id": 789}, "Light and Fun": {"id": 101112}}}
+
+Let's work reverse on this one, from the previous one we know that we
+can decode the page like we did previously with the Country.
+
+.. code-block:: elm
+
+    import Json.Decode as JD
+    import Json.Decode.Pipeline exposing (decode, optional, required)
+
+    type alias Record =
+        { countries : List Country }
+
+
+    type alias Country =
+        { name: String
+        , pages: List Page
+        }
+
+
+    type alias Page =
+        { name: String
+        , id: Int
+        }
+
+
+    customDecoder : JD.Decoder Record
+    customDecoder =
+        JD.keyValuePairs decodeCountry
+            |> JD.map buildRecord
+
+
+    buildRecord : List ( String, Country ) -> Record
+    buildRecord countries =
+        Record (List.map (\(name, country) -> { country | name = name }) countries)
+
+    decodeCountry : JD.Decoder Country
+    decodeCountry =
+        JD.keyValuePairs decodePage
+            |> JD.map buildCountry
+
+    buildCountry : List (String, Page) -> Country
+    buildCountry pages =
+        Country "" (List.map (\(name, page) -> { page | name = name }) pages)
+
+    decodePage : JD.Decoder Page
+    decodePage =
+        decode Page
+            |> hardcoded ""
+            |> required "id" JD.int
+
+Try it here: https://ellie-app.com/qv98vjJqFBa1
+
+
+How to decode an ISO date?
+==========================
+
+**JSON sample**
+
+.. code-block:: json
+
+    {"date": "2011-04-14T16:00:49Z"}
+
+
+**Record and decoder**
+
+.. code-block:: elm
+
+    import Json.Decode as JD
+    import Date exposing (Date)
+
+    type alias Record =
+        { date : Date }
+
+    customDecoder : JD.Decoder Record
+	customDecoder =
+	    decode Record
+		    |> required "date" decodeDate
+
+	decodeDate : JD.Decoder Date
+    decodeDate =
+       JD.string
+            |> JD.andThen
+                (\dateString ->
+                    case (Date.fromString dateString) of
+                        Ok date ->
+                            JD.succeed date
+
+                        Err errorString ->
+                            JD.fail errorString
+                )
+
+Try it here: https://ellie-app.com/qvjwtzTk2qa1
+
+
+Conclusion
+==========
+
+Before writting this article I was completly stuck on how I should
+start with this nested ``keyValuePairs`` decoding, as usual with Elm
+the solution was to start from scratch decoding a small JSON and
+making it more complex.
+
+Did you know that Microsoft released their JSON View for Edge, and
+they built it with Elm:
+http://package.elm-lang.org/packages/Microsoft/elm-json-tree-view/latest
