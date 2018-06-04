@@ -15,7 +15,7 @@ PATH = 'content'
 
 TIMEZONE = 'Europe/Paris'
 
-DEFAULT_LANG = u'fr'
+DEFAULT_LANG = u'en'
 
 # Social widget
 SOCIAL = (('Github', 'https://github.com/ChefClub'),)
@@ -44,7 +44,7 @@ ARTICLE_SAVE_AS = '{url}.html'
 
 PLUGIN_PATHS = ['plugins', '.']
 PLUGINS = ['post_stats', 'better_figures_and_images', 'i18n_subsites']
-I18N_SUBSITES = {'en': {}, }  # Override any default settings.
+I18N_SUBSITES = {'fr': {}, }  # Override any default settings.
 RESPONSIVE_IMAGES = True
 
 DATE_FORMATS = {
