@@ -1,0 +1,233 @@
+How to use Pontoon to manage your app translation?
+##################################################
+
+:lang: en
+:date: 2018-06-05
+:url: use-mozilla-pontoon-to-manage-django-app-translation
+:summary: Mozilla Pontoon is a django app designed to manage po files with your VCS.
+:slug: use-mozilla-pontoon-to-manage-django-app-translation
+
+When your app goes global, managing translations becomes a priority.
+
+Django way of handling translations is to use gettext and ``.po``
+files. ``.po`` files are text files that contain a list of strings
+present in your software and the translation you want to use for those
+strings.
+
+Django uses gettext ``.po`` files for that which are text files that
+contains both the string in your software and how you wish to
+translate it for your app.
+
+Handle ``.po`` files can be cumbersome and painful to manage at scale.
+Let's look into how Pontoon can help you ease this pain.
+
+
+Pontoon to the rescue
+=====================
+
+Mozilla Pontoon is a Django application that is designed to ease
+collaboration around projects translations.
+
+You can contribute to Mozilla products translation here: https://pontoon.mozilla.org/
+
+Pontoon is feature rich with gems like an inplace translation plugin
+you add to your own website. No need to compile po files, just click
+and edit.
+
+
+Easily deploy to Heroku
+=======================
+
+`Some great documentation is available <https://mozilla-pontoon.readthedocs.io/en/latest/admin/deployment.html>`_ and comes with a nice auto **Deploy to Heroku** button.
+
+It will help you configure all the pieces: RabbitMQ broker, PostgreSQL
+database, memcache cache, and even some monitoring tools that you
+might need like newrelic.
+
+The trickiest part was to setup the SSH config to connect to the
+Heroku instance.
+
+First, create a private key using::
+
+  ssh-keygen -t rsa -f pontoon -b 4096
+
+Then open the pontoon file and copy paste its content in the ``SSH_KEY`` form field.
+
+For the ``SSH_CONFIG`` field I used::
+
+  StrictHostKeyChecking=no
+
+  Host github.com
+  User git
+
+.. image:: {filename}/images/pontoon/ssh-config.png
+    :alt: Configure the SSH credentials and config
+
+Don't forget to use the ``pontoon.pub`` file to configure a **Deploy
+writable key** in your github repository so that the Pontoon user can
+sync back your translations.
+
+.. image:: {filename}/images/pontoon/git-ssh-config.png
+    :alt: Configure the SSH public key in your Github config
+
+
+  
+Configure a new project
+=======================
+
+When accessing your freshly deployed app, your email address is your login in
+the **Sign In** page and your password is the one picked during the setup phase.
+
+Go in the admin and add a new project: https://YOUR-APP-ID.herokuapp.com/admin/projects/
+
+Then pick a name for your project and a slug will automatically be constructed.
+
+.. image:: {filename}/images/pontoon/languages.png
+    :alt: Pick a name an select the languages
+
+In the Data source Repositories configuration panel enter your
+repository ``SSH URL`` and set your working branch.
+
+.. image:: {filename}/images/pontoon/repository.png
+    :alt: Configure the git repository
+
+The Download prefix should look like that: https://raw.githubusercontent.com/Chefclub/chefclub-web-design/master/path/from-the-beginning/locale/{locale_code}/LC_MESSAGES/django.po
+
+Sadly, you can only have one path per repository (and you can't
+create two projects related to the same repository.)
+
+I hope this will get fixed eventually.
+
+In your project info you can add a description and set the translation
+priority (it changes the number of stars in the list of projects)
+
+You can then save your project.
+
+Sync your project
+=================
+
+You can check the logs ensure everything is running as expected::
+
+    heroku logs -f -a YOUR-APP-ID
+
+You will then need to trigger a sync using the heroku run command::
+
+    heroku run -a YOUR-APP-ID ./manage.py sync_projects
+
+Hopefully at this stage, everything will appear in your pontoon
+project, you can start translating everything and run the
+sync_projects command again once your are happy with the results.
+
+
+Create new users for your team
+==============================
+
+In case you want to create new users, you can load a shell::
+
+    heroku run -a YOUR-APP-ID ./manage.py shell
+    >>> from django.contrib.auth.models import User
+    >>> u = User.objects.create_user('username', password='password')
+    >>> u.email = 'email@host.tld'
+    >>> u.firstname = 'Firstname'
+    >>> u.lastname = 'lastname'
+    >>> u.save()
+
+Don't forget the email and name because without them you won't be able
+to commit your translations.
+
+Take aways
+==========
+
+Using Mozilla Pontoon is really friendly from a translator perspective
+and once configured the ``sync_projects`` is quite handy.
+
+However it could be more friendly to deploy.
+
+Heroku deploy button is <3
+--------------------------
+
+This button is handy. You won't have to loose yourself in all the
+setup pain before starting using Pontoon.
+
+It saved me a lot of time.
+
+
+Don't disable the pontoon intro project
+---------------------------------------
+
+My first reflex was to disable the Pontoon intro project: if you do so
+the homepage will start returning 404 so don't disable it.
+
+
+Don't make mistakes because you can't fix them
+----------------------------------------------
+
+If you misconfigure your project it can be quite tricky to restart,
+you can't really delete it can't you flush your config.
+
+My take was to redeploy the all stack. I must have done it 5 or 6
+times before getting it right.
+
+The ``Download prefix`` field is quite tricky to get right because it
+is not obvious at all.
+
+So make sure to build an URL that contains the ``{locale_code}``
+variable and make sure to follow the advice of opening the raw file of
+your en PO and then copy the URL and replace ``en`` with
+``{locale_code}``. Why not but I wouldn't have done it like that.
+
+You can use ``./manage.py sync_projects --force --projects
+your_project_slug`` to force a reflesh if you didn't commit anything
+but it doesn't fix all the issues.
+
+
+Pontoon doesn't support multiple locale directories
+---------------------------------------------------
+
+This is IMHO the biggest disappointment. You cannot define multiple
+prefixes for your ``.po`` files. Usually, in Django, it is often the
+case that each apps contains its own translations.
+
+Here you have to create a global locale repository and add it in your
+settings ``LOCALE_PATH``::
+
+    import os
+
+    LOCALE_PATHS = (
+        os.path.join(os.path.dirname(__file__), "locale"),
+    )
+
+I tried to hack it by creating a project per app but pontoon was
+unable to handle two projects with the same repository.
+
+
+Pitfall about your locale configuration
+---------------------------------------
+
+Gettext expect ``LANGUAGE_CODE`` to look like this: ``pt_BR`` while
+Django expect them to look like: ``pt-br``.
+
+This took me a bunch of time to figure out.
+
+You will need to configure the ``LANGUAGES`` settings to look like this::
+
+    LANGUAGES = [
+      ('es-mx', 'Mexican - Mexicano'),
+      ('pt-br', 'Portuguese - Português'),
+      ('zh-cn', 'Chinese - 中文'),
+    ]
+
+While you will need to configure Pontoon and your languages export like this::
+
+    python manage.py makemessages -l es_MX
+    python manage.py makemessages -l pt_BR
+    python manage.py makemessages -l zh_CN
+
+
+Conclusion
+==========
+
+Pontoon is a great tool, easy to deploy thanks to the Heroku button.
+
+I want to send special thanks to the Mozilla Pontoon team for their help. I contacted
+them through the `IRC Mozilla #Pontoon channel <http://chat.mibbit.com/?server=irc.mozilla.org&channel=%23pontoon>`_.
