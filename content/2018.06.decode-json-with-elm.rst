@@ -139,7 +139,7 @@ customDecoder to build an Elm Record from it.
 
 .. code-block:: json
 
-	{"uid": "Test"}
+    {"uid": "Test"}
 
 
 Decoding an object
@@ -158,7 +158,7 @@ Let start with a JSON object from which we want to read the uid.
 
     {"uid": "aeb2c06d-ce4f-4bc7-a601-3e7d9e159925"}
 
-	
+    
 **Record and decoder**
 
 .. code-block:: elm
@@ -526,11 +526,11 @@ How to decode an ISO date?
         { date : Date }
 
     customDecoder : JD.Decoder Record
-	customDecoder =
-	    decode Record
-		    |> required "date" decodeDate
+    customDecoder =
+        decode Record
+            |> required "date" decodeDate
 
-	decodeDate : JD.Decoder Date
+    decodeDate : JD.Decoder Date
     decodeDate =
        JD.string
             |> JD.andThen
