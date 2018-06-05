@@ -2,7 +2,7 @@ How to use Pontoon to manage your app translation?
 ##################################################
 
 :lang: en
-:date: 2018-05-25
+:date: 2018-06-05
 :url: use-mozilla-pontoon-to-manage-django-app-translation
 :summary: Mozilla Pontoon is a django app designed to manage po files with your VCS.
 :slug: use-mozilla-pontoon-to-manage-django-app-translation
