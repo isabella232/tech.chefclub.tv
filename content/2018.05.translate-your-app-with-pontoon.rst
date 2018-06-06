@@ -162,8 +162,11 @@ the homepage will start returning 404 so don't disable it.
 Don't make mistakes because you can't fix them
 ----------------------------------------------
 
-If you misconfigure your project it can be quite tricky to restart,
-you can't really delete it can't you flush your config.???
+If you misconfigure your project it can be quite tricky:
+
+- You don't have an option to delete it from the admin panel.
+- The worker may have downloaded your repository and you can't flush
+  it to start fresh.
 
 My take was to redeploy the whole stack. I must have done it 5 or 6
 times before getting it right.
