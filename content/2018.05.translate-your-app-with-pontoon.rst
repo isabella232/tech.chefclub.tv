@@ -9,17 +9,17 @@ How to use Pontoon to manage your app translation?
 
 When your app goes global, managing translations becomes a priority.
 
-Django way of handling translations is to use gettext and ``.po``
+The Django way of handling translations is to use gettext and ``.po``
 files. ``.po`` files are text files that contain a list of strings
 present in your software and the translation you want to use for those
 strings.
 
-Django uses gettext ``.po`` files for that which are text files that
-contains both the string in your software and how you wish to
-translate it for your app.
+Django uses gettext ``.po`` files for that. Those are text files that
+contain both the string in your software and how you wish to
+translate it for your language.
 
-Handle ``.po`` files can be cumbersome and painful to manage at scale.
-Let's look into how Pontoon can help you ease this pain.
+Handling ``.po`` files can be cumbersome and painful at scale. 
+Let's look at how Pontoon can help you ease this pain.
 
 
 Pontoon to the rescue
@@ -51,7 +51,7 @@ First, create a private key using::
 
   ssh-keygen -t rsa -f pontoon -b 4096
 
-Then open the pontoon file and copy paste its content in the ``SSH_KEY`` form field.
+Then open the generated ``pontoon`` file and copy paste its content in the ``SSH_KEY`` form field in Heroku (see below).
 
 For the ``SSH_CONFIG`` field I used::
 
@@ -94,29 +94,29 @@ repository ``SSH URL`` and set your working branch.
 The Download prefix should look like that: https://raw.githubusercontent.com/Chefclub/chefclub-web-design/master/path/from-the-beginning/locale/{locale_code}/LC_MESSAGES/django.po
 
 Sadly, you can only have one path per repository (and you can't
-create two projects related to the same repository.)
+create two projects related to the same repository).
 
 I hope this will get fixed eventually.
 
 In your project info you can add a description and set the translation
-priority (it changes the number of stars in the list of projects)
+priority (it changes the number of stars in the list of projects).
 
 You can then save your project.
 
 Sync your project
 =================
 
-You can check the logs ensure everything is running as expected::
+You can check the logs to ensure everything is running as expected::
 
     heroku logs -f -a YOUR-APP-ID
 
-You will then need to trigger a sync using the heroku run command::
+You will then need to trigger a sync using the ``heroku run`` command::
 
     heroku run -a YOUR-APP-ID ./manage.py sync_projects
 
 Hopefully at this stage, everything will appear in your pontoon
 project, you can start translating everything and run the
-sync_projects command again once your are happy with the results.
+sync_projects command again once you are happy with the results.
 
 
 Create new users for your team
@@ -135,10 +135,10 @@ In case you want to create new users, you can load a shell::
 Don't forget the email and name because without them you won't be able
 to commit your translations.
 
-Take aways
-==========
+Takeaways
+=========
 
-Using Mozilla Pontoon is really friendly from a translator perspective
+Using Mozilla Pontoon is really friendly from a translator's perspective
 and once configured the ``sync_projects`` is quite handy.
 
 However it could be more friendly to deploy.
@@ -162,18 +162,21 @@ the homepage will start returning 404 so don't disable it.
 Don't make mistakes because you can't fix them
 ----------------------------------------------
 
-If you misconfigure your project it can be quite tricky to restart,
-you can't really delete it can't you flush your config.
+If you misconfigure your project it can be quite tricky:
 
-My take was to redeploy the all stack. I must have done it 5 or 6
+- You don't have an option to delete it from the admin panel.
+- The worker may have downloaded your repository and you can't flush
+  it to start fresh.
+
+My take was to redeploy the whole stack. I must have done it 5 or 6
 times before getting it right.
 
 The ``Download prefix`` field is quite tricky to get right because it
 is not obvious at all.
 
-So make sure to build an URL that contains the ``{locale_code}``
+So make sure to build a URL that contains the ``{locale_code}``
 variable and make sure to follow the advice of opening the raw file of
-your en PO and then copy the URL and replace ``en`` with
+your ``en`` PO and then copy the URL and replace ``en`` with
 ``{locale_code}``. Why not but I wouldn't have done it like that.
 
 You can use ``./manage.py sync_projects --force --projects
@@ -198,16 +201,16 @@ settings ``LOCALE_PATH``::
     )
 
 I tried to hack it by creating a project per app but pontoon was
-unable to handle two projects with the same repository.
+unable to handle two projects within the same repository.
 
 
 Pitfall about your locale configuration
 ---------------------------------------
 
-Gettext expect ``LANGUAGE_CODE`` to look like this: ``pt_BR`` while
+Gettext expects ``LANGUAGE_CODE`` to look like this: ``pt_BR`` while
 Django expect them to look like: ``pt-br``.
 
-This took me a bunch of time to figure out.
+This took me a bunch of time to figure this out.
 
 You will need to configure the ``LANGUAGES`` settings to look like this::
 
