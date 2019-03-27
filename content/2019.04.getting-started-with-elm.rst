@@ -13,7 +13,7 @@ Since the `last article <https://www.servicedenuages.fr/en/getting-started-with-
 I wrote two years ago, we have been using Elm in production since then with
 great success.
 
-This article is an update to Elm 0.19 of the previous one.
+This article is an update from the original article (Elm 0.18 -> Elm 0.19)
 
 
 What is Elm and why should I care?
@@ -161,7 +161,8 @@ To get started you can simply create a new file named ``src/Main.elm``
     main = Html.text "Hello world"
 
 Elm benefits from a full featured module system, with a broad
-ecosystem of external packages available. ``Html`` is part of the core.
+ecosystem of external packages available. ``Html`` is part of the core
+libs.
 
 Playing with elm-format
 -----------------------
@@ -298,8 +299,20 @@ Elm. Basically ``update`` is a reducer.
 
 The events and their parameters are defined in a ``Msg``.
 
-In order to create our application that handle states, we can use the
-``sandbox`` from the Browser package:
+In order to create our application that handle states, we can use `Browser package`_.
+
+.. _`Browser package`: https://package.elm-lang.org/packages/elm/browser/latest/Browser
+
+It provides four differents level of Elm programs.
+
+1. ``sandbox`` which is the simplest Elm program that you can build,
+   it let you create a HTML element handled by Elm which, however,
+   cannot communicate with the outside world.
+2. ``element`` create an HTML element managed by Elm.
+3. ``document`` which let you manage a HTML page (handle the title and the body tag)
+4. ``application`` which let you manage URL changes as well.
+
+To start with, let's create our first Elm program using sandbox.
 
 .. code-block:: elm
 
@@ -663,8 +676,8 @@ alias definition.
 Decoding JSON values into records using ``Decode.succeed``
 ----------------------------------------------------------
 
-We can also create a record and use ``Decode.succeed`` to mark it as
-a decoded value. That's what `NoRedInk/elm-json-decode-pipeline`_ is
+We can also create a record and use ``Decode.succeed`` to mark it as a
+decoded value. That's the API `NoRedInk/elm-json-decode-pipeline`_ is
 providing.
 
 .. _`NoRedInk/elm-json-decode-pipeline`: https://package.elm-lang.org/packages/NoRedInk/elm-json-decode-pipeline/latest/
@@ -696,8 +709,8 @@ return partial decoding functions.
 Handling the response
 ---------------------
 
-Once the response body has been decoded, elm sends a message with
-a result that is handled by the update function.
+Once the response body has been decoded, elm sends a message with a
+result that is handled by the update function.
 
 A Result is a native Elm type that can either be a success or an
 error.
@@ -907,9 +920,6 @@ our ``getUserName`` function like that:
     getUserName =
         .username
 
-It is really likely that the state of our app would grow, that's why
-it is recommended to use a type alias for ``Model``.
-
 
 Elm types, a step further
 -------------------------
@@ -945,7 +955,7 @@ We can then define ``Result Http.Error String`` that is either
 ``Ok value`` with ``value`` of type ``String`` or ``Err error`` with
 ``error`` of type ``Http.Error``
 
-What can blow your mind is to have complex types that are self-explanatory:
+We can even make complex types that are self-explanatory:
 
 .. code-block:: elm
 
