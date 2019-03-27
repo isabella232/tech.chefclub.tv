@@ -2,7 +2,7 @@ Getting started with Elm 0.19
 #############################
 
 :lang: en
-:date: 2019-04-01
+:date: 2019-03-27
 :url: getting-started-with-elm-0.19
 :summary: What is Elm? how does it work? How can I try it really fast?
 
