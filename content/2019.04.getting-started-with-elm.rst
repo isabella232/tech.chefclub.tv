@@ -15,9 +15,13 @@ great success.
 
 This article is an update from the original article (Elm 0.18 -> Elm 0.19)
 
+You might as well follow the official `Elm guide`_.
+
+.. _`Elm guide`: https://guide.elm-lang.org/
+
 
 What is Elm and why should I care?
-===========================================
+==================================
 
 Elm_ is a Web application development platform, providing a programming
 language, a compiler, an architecture and tooling. It focuses
