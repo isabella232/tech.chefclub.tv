@@ -80,7 +80,7 @@ code to reflect your code update in realtime. It comes with a debugger
 that shows you the list of events and state of your application at
 a given point in time — you can even go back in time and replay previous
 events. elm-format_ also formats your code automatically avoiding arguments
- over coding styles.
+over coding styles.
 
 .. _elm-live: https://github.com/tomekwi/elm-live
 .. _elm-format: https://github.com/avh4/elm-format
@@ -284,22 +284,118 @@ Adding some state
 Now that you know how to render your page in HTML, let's see how to
 write a program that handles events.
 
-The way Elm handles that is by having:
+A word about types
+------------------
+
+Before we dive into the core of an Elm program, I'd like to tell you
+about Elm types.
+
+Every value in Elm has a type.
+
+Elm itself defines the usual types, however, our business logic
+sometimes doesn't comply with the existing types.
+
+To explain what types are, let's take a example that you use in every
+language without thinking about it: a boolean value.
+
+In Elm, we would define the type like that: ``type Bool = True | False``
+
+In many other language we would call that an Enum.
+
+The main difference is that in Elm, those enum value are patterns that
+can take parameters.
+
+For instance, we will use a type to define the list of events that can
+be trigger with user interaction in our Elm program:
+
+.. code-block:: elm
+
+    type Msg
+        = AddUser
+        | SetName String
+        | SetStatus UserStatus
+
+    type UserStatus
+        = Active
+		| Inactive
+
+We define a custom type ``UserStatus`` that can be either ``Active``
+or ``Inactive`` and a list of messages that will be triggered by
+button or radio clicks or keystroke in an input field for instance.
+
+Here you see that our ``SetName`` event will take a ``String`` parameter.
+
+If you want to know more about types, `there is a paragraph below`_
+telling you more about it.
+
+.. _`there is a paragraph below`: #a-word-about-elm-types-and-elm-records
+
+
+The Elm Architecture
+====================
+
+The way Elm handles a program is by having:
 
 - a ``Model`` that keep the state of the app,
 - an ``update`` function that handles all the app events and updates
   the model state accordingly
-- a view function that returns the Virtual DOM matching the state of the app
-  every time it's updated.
+- a ``view`` function that returns the Virtual DOM matching the state
+  of the app every time it's updated.
 
 For those who know Redux_, it has been heavily inspired by
 Elm. Basically ``update`` is a reducer.
 
 .. _Redux: http://redux.js.org/
 
-The events and their parameters are defined in a ``Msg``.
+When with Redux you would write:
 
-In order to create our application that handle states, we can use `Browser package`_.
+.. code-block:: javascript
+
+    const initialState = 0;
+    
+    const incrementAction = {
+      type: "INCREMENT"
+    };
+    
+    const decrementAction = {
+      type: "DECREMENT"
+    };
+    
+    function counterReducer(state = initialState, action) {
+      switch (action.type) {
+        case "INCREMENT":
+          return state + 1;
+    
+        case "DECREMENT":
+          return state - 1;
+    
+        default:
+          return state;
+      }
+    }
+
+With Elm you will write:
+
+.. code-block:: elm
+
+    type alias Model = Int
+
+    type Msg
+       = Increment 
+       | Decrement
+
+    update : Msg -> Model -> Model
+    update msg model =
+      case msg of
+        Increment ->
+          model + 1
+    
+        Decrement ->
+          model - 1
+
+The events and their parameters are defined in a ``Msg`` type.
+
+In order to create our application that handle states, we can use the `Browser package`_.
 
 .. _`Browser package`: https://package.elm-lang.org/packages/elm/browser/latest/Browser
 
@@ -312,7 +408,7 @@ It provides four differents level of Elm programs.
 3. ``document`` which let you manage a HTML page (handle the title and the body tag)
 4. ``application`` which let you manage URL changes as well.
 
-To start with, let's create our first Elm program using sandbox.
+To start with, let's create our first Elm program using ``Browser.sandbox``.
 
 .. code-block:: elm
 
