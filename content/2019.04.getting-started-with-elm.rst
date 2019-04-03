@@ -106,6 +106,8 @@ package manager.
 
 .. _npm: https://www.npmjs.com/
 
+If at this stage it doesn't work and you want to keep following,
+please use Ellie App to experiment: https://ellie-app.com/
 
 Looking for an IDE?
 -------------------
